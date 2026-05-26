@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>龙岗区居家学生项目管理台 MVP</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="项目导航">
+        <div class="brand">
+          <div class="brand-mark">LG</div>
+          <div>
+            <h1>居家学生项目管理台</h1>
+            <p>第一阶段 MVP 原型</p>
+          </div>
+        </div>
+        <nav class="nav-list">
+          <button class="nav-item active" data-section="dashboard">总览看板</button>
+          <button class="nav-item" data-section="staff">人员资质</button>
+          <button class="nav-item" data-section="candidates">备选准入</button>
+          <button class="nav-item" data-section="families">家庭档案</button>
+          <button class="nav-item" data-section="assessments">测评报告</button>
+          <button class="nav-item" data-section="services">服务计划</button>
+          <button class="nav-item" data-section="crisis">危机预警</button>
+          <button class="nav-item" data-section="quality">质控整改</button>
+          <button class="nav-item" data-section="supervision">督导汇编</button>
+          <button class="nav-item" data-section="portal">学校协同</button>
+          <button class="nav-item" data-section="reintegration">复学追踪</button>
+          <button class="nav-item" data-section="audit">操作日志</button>
+          <button class="nav-item" data-section="archive">归档质控</button>
+        </nav>
+        <div class="deadline-box">
+          <span>下一验收节点</span>
+          <strong>2026-06-24</strong>
+          <p>中期自查与材料冻结</p>
+        </div>
+        <div class="side-actions">
+          <button id="exportStateBtn" type="button">导出数据</button>
+          <label class="file-action">
+            导入数据
+            <input id="importStateInput" type="file" accept="application/json" />
+          </label>
+          <button id="resetDemoBtn" type="button">重置样例</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">龙岗区 60 名居家学生项目</p>
+            <h2 id="pageTitle">总览看板</h2>
+          </div>
+          <div class="toolbar">
+            <label class="search-box">
+              <span>搜索</span>
+              <input id="searchInput" type="search" placeholder="学生、学校、家庭编号" />
+            </label>
+            <select id="riskFilter" aria-label="按风险等级筛选">
+              <option value="all">全部风险</option>
+              <option value="red">红码</option>
+              <option value="yellow">黄码</option>
+              <option value="blue">蓝码</option>
+            </select>
+            <button id="searchBtn" class="toolbar-button" type="button">搜索</button>
+            <button id="clearSearchBtn" class="toolbar-button ghost-button" type="button">清空</button>
+          </div>
+        </header>
+
+        <section id="dashboard" class="page-section active-section" aria-labelledby="pageTitle">
+          <div class="metric-grid" id="metricGrid"></div>
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>验收缺口提示</h3>
+                <span id="gapCount" class="badge badge-warn"></span>
+              </div>
+              <div id="gapList" class="gap-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>风险分布</h3>
+                <span class="muted">动态分级</span>
+              </div>
+              <div id="riskBars" class="risk-bars"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>中期指标</h3>
+                <span class="muted">调整后口径</span>
+              </div>
+              <div id="acceptanceStatus" class="stack-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="staff" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>人员资质与负荷</h3>
+                <span id="staffLoadBadge" class="badge badge-warn"></span>
+              </div>
+              <div id="staffList" class="stack-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>新增人员</h3>
+                <span class="muted">正式版按资质审核上岗</span>
+              </div>
+              <form id="staffForm" class="service-form">
+                <label>
+                  姓名
+                  <input id="staffName" type="text" required />
+                </label>
+                <label>
+                  角色
+                  <select id="staffRole">
+                    <option value="咨询师">咨询师</option>
+                    <option value="团辅老师">团辅老师</option>
+                    <option value="测评专员">测评专员</option>
+                    <option value="督导师">督导师</option>
+                    <option value="档案合规">档案合规</option>
+                    <option value="市教育局监管">市教育局监管</option>
+                  </select>
+                </label>
+                <label class="check-row">
+                  <input id="staffQualified" type="checkbox" checked />
+                  <span>资质审核通过</span>
+                </label>
+                <button type="submit">保存人员</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="candidates" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>备选名单与准入</h3>
+                <span class="muted">80-100户漏斗筛选</span>
+              </div>
+              <div id="candidateList" class="stack-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>新增备选家庭</h3>
+                <span class="muted">进入正式服务前需准入</span>
+              </div>
+              <form id="candidateForm" class="service-form">
+                <label>
+                  学生
+                  <input id="candidateStudent" type="text" required />
+                </label>
+                <label>
+                  学校
+                  <input id="candidateSchool" type="text" required />
+                </label>
+                <label>
+                  居家原因
+                  <input id="candidateReason" type="text" value="情绪困扰/待复学" />
+                </label>
+                <label>
+                  居家时长
+                  <input id="candidateHomeDuration" type="text" value="连续居家2周以上" />
+                </label>
+                <button type="submit">加入备选名单</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="families" class="page-section" aria-labelledby="pageTitle">
+          <div class="split-layout">
+            <section class="panel family-list-panel">
+              <div class="panel-heading">
+                <h3>家庭 / 学生档案</h3>
+                <span id="familyCount" class="muted"></span>
+              </div>
+              <div id="familyList" class="family-list"></div>
+            </section>
+            <section class="panel detail-panel">
+              <div class="panel-heading">
+                <h3>个案详情</h3>
+                <div class="panel-actions">
+                  <span id="detailStatus" class="badge"></span>
+                  <button id="deleteFamilyBtn" class="small-button danger-button" type="button">删除</button>
+                  <button id="undoBtn" class="small-button" type="button" disabled>回退</button>
+                </div>
+              </div>
+              <div id="familyDetail" class="family-detail"></div>
+            </section>
+            <section class="panel detail-panel">
+              <div class="panel-heading">
+                <h3>编辑当前档案</h3>
+                <span class="muted">仅编辑基础信息</span>
+              </div>
+              <form id="editFamilyForm" class="service-form compact-form">
+                <label>
+                  学生
+                  <input id="editStudent" type="text" required />
+                </label>
+                <label>
+                  学校
+                  <input id="editSchool" type="text" required />
+                </label>
+                <label>
+                  年级
+                  <input id="editGrade" type="text" required />
+                </label>
+                <label>
+                  监护人
+                  <input id="editGuardian" type="text" required />
+                </label>
+                <label>
+                  风险
+                  <select id="editRisk">
+                    <option value="blue">蓝码</option>
+                    <option value="yellow">黄码</option>
+                    <option value="red">红码</option>
+                  </select>
+                </label>
+                <label>
+                  下一任务
+                  <input id="editNextTask" type="text" />
+                </label>
+                <button type="submit">保存修改</button>
+              </form>
+            </section>
+            <section class="panel detail-panel">
+              <div class="panel-heading">
+                <h3>手动建档</h3>
+                <span class="muted">备选名单 / 临时补录</span>
+              </div>
+              <form id="familyForm" class="service-form compact-form">
+                <label>
+                  学生
+                  <input id="newStudent" type="text" placeholder="学生姓名或代称" required />
+                </label>
+                <label>
+                  学校
+                  <input id="newSchool" type="text" placeholder="学校名称" required />
+                </label>
+                <label>
+                  年级
+                  <input id="newGrade" type="text" placeholder="如：初一 / 高二" required />
+                </label>
+                <label>
+                  监护人
+                  <input id="newGuardian" type="text" placeholder="监护人姓名" required />
+                </label>
+                <label>
+                  初始风险
+                  <select id="newRisk">
+                    <option value="blue">蓝码</option>
+                    <option value="yellow">黄码</option>
+                    <option value="red">红码</option>
+                  </select>
+                </label>
+                <button type="submit">创建家庭档案</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="assessments" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>测评量表录入</h3>
+                <span class="muted">前测 / 中测 / 后测</span>
+              </div>
+              <form id="assessmentForm" class="service-form compact-form">
+                <label>
+                  学生
+                  <select id="assessmentFamily"></select>
+                </label>
+                <label>
+                  量表
+                  <select id="assessmentScale">
+                    <option value="MHT">MHT 中小学生心理健康诊断测验</option>
+                    <option value="CDI">CDI 儿童抑郁量表</option>
+                    <option value="SCAS">SCAS 儿童焦虑量表</option>
+                    <option value="SDS">SDS 抑郁自评量表</option>
+                    <option value="SAS">SAS 焦虑自评量表</option>
+                    <option value="自杀风险评估">自杀风险评估</option>
+                  </select>
+                </label>
+                <label>
+                  阶段
+                  <select id="assessmentPhase">
+                    <option value="前测">前测</option>
+                    <option value="中测">中测</option>
+                    <option value="后测">后测</option>
+                  </select>
+                </label>
+                <label>
+                  分数
+                  <input id="assessmentScore" type="number" min="0" max="100" value="60" />
+                </label>
+                <label class="check-row">
+                  <input id="assessmentPositive" type="checkbox" />
+                  <span>阳性或需重点关注</span>
+                </label>
+                <button type="submit">保存测评</button>
+              </form>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>自动报告</h3>
+                <span id="assessmentCount" class="badge badge-info"></span>
+              </div>
+              <div id="assessmentReports" class="stack-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="services" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>服务进度台账</h3>
+                <span class="muted">计划、执行、佐证分离</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>家庭编号</th>
+                      <th>学生</th>
+                      <th>风险</th>
+                      <th>个案辅导</th>
+                      <th>团辅参与</th>
+                      <th>最近服务</th>
+                      <th>下一任务</th>
+                    </tr>
+                  </thead>
+                  <tbody id="serviceRows"></tbody>
+                </table>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>新增服务记录</h3>
+                <span class="muted">原型本地状态</span>
+              </div>
+              <form id="serviceForm" class="service-form">
+                <label>
+                  服务对象
+                  <select id="serviceFamily"></select>
+                </label>
+                <label>
+                  服务类型
+                  <select id="serviceType">
+                    <option value="individual">学生个案辅导</option>
+                    <option value="group">学生团辅</option>
+                    <option value="parent">家长服务</option>
+                    <option value="teacher">教师协同</option>
+                    <option value="supervision">督导质控</option>
+                  </select>
+                </label>
+                <label>
+                  记录摘要
+                  <textarea id="serviceNote" rows="4" placeholder="填写服务要点、风险变化、后续任务"></textarea>
+                </label>
+                <label class="check-row">
+                  <input id="evidenceReady" type="checkbox" />
+                  <span>佐证材料已上传</span>
+                </label>
+                <button type="submit">登记服务</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="crisis" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>危机预警工作流</h3>
+                <span class="muted">一级2小时上报，24小时转介</span>
+              </div>
+              <div id="crisisList" class="stack-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>新增危机事件</h3>
+                <span class="muted">原型演示</span>
+              </div>
+              <form id="crisisForm" class="service-form">
+                <label>
+                  学生
+                  <select id="crisisFamily"></select>
+                </label>
+                <label>
+                  等级
+                  <select id="crisisLevel">
+                    <option value="1">一级危机</option>
+                    <option value="2">二级危机</option>
+                    <option value="3">三级危机</option>
+                  </select>
+                </label>
+                <label>
+                  触发来源
+                  <input id="crisisSource" type="text" value="咨询师观察" />
+                </label>
+                <button type="submit">创建预警</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="quality" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>质控整改台账</h3>
+                <span id="qualityOverdueCount" class="badge badge-warn"></span>
+              </div>
+              <div id="qualityList" class="stack-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>新增整改项</h3>
+                <span class="muted">责任到人、限时闭环</span>
+              </div>
+              <form id="qualityForm" class="service-form">
+                <label>
+                  关联家庭
+                  <select id="qualityFamily"></select>
+                </label>
+                <label>
+                  问题标题
+                  <input id="qualityTitle" type="text" value="服务佐证缺失" />
+                </label>
+                <label>
+                  整改截止日
+                  <input id="qualityDueDate" type="date" value="2026-06-14" />
+                </label>
+                <button type="submit">登记整改</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="supervision" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>督导台账</h3>
+                <span class="muted">月度督导与高危专项督导</span>
+              </div>
+              <div id="supervisionList" class="stack-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>中期 / 终期汇编</h3>
+                <span class="badge badge-info">自动生成</span>
+              </div>
+              <button id="generateBriefBtn" class="action-button">生成汇编</button>
+              <pre id="acceptanceBrief" class="brief-box"></pre>
+            </section>
+          </div>
+        </section>
+
+        <section id="portal" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>学校协同反馈入口</h3>
+                <span class="muted">本版不做家长端</span>
+              </div>
+              <p class="muted">教师端只作为轻量反馈入口，学校反馈经项目组审核后进入正式档案。</p>
+              <div id="teacherPortalList" class="stack-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>家校社医联动通知</h3>
+                <span class="badge badge-info">协同</span>
+              </div>
+              <form id="noticeForm" class="service-form">
+                <label>
+                  关联家庭
+                  <select id="noticeFamily"></select>
+                </label>
+                <label>
+                  通知类型
+                  <select id="noticeType">
+                    <option value="复学准备">复学准备</option>
+                    <option value="危机跟进">危机跟进</option>
+                    <option value="低参与攻坚">低参与攻坚</option>
+                    <option value="转介协同">转介协同</option>
+                  </select>
+                </label>
+                <label>
+                  通知内容
+                  <textarea id="noticeContent" rows="3" placeholder="写明需要哪几方配合、时限和下一步"></textarea>
+                </label>
+                <button type="submit">生成通知</button>
+              </form>
+              <div id="noticeList" class="stack-list portal-notices"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="reintegration" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>复学成效追踪</h3>
+                <span id="returnRateBadge" class="badge badge-info"></span>
+              </div>
+              <div id="reintegrationGrid" class="archive-grid"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>数据分析</h3>
+                <span class="muted">项目级趋势</span>
+              </div>
+              <div id="analysisPanel" class="stack-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="audit" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>操作审计日志</h3>
+                <span class="muted">自动保存到本机浏览器</span>
+              </div>
+              <div id="auditList" class="stack-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>已删除档案</h3>
+                <span id="deletedCount" class="badge badge-warn"></span>
+              </div>
+              <div id="deletedList" class="stack-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="archive" class="page-section" aria-labelledby="pageTitle">
+          <div class="content-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <h3>一户一档归档状态</h3>
+                <span class="muted">缺项、审核、冻结前检查</span>
+              </div>
+              <div id="archiveGrid" class="archive-grid"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>控制点</h3>
+                <span class="badge badge-info">MVP</span>
+              </div>
+              <ul class="control-list">
+                <li>未签署知情同意时禁止开展心理服务。</li>
+                <li>红码个案必须存在危机处置或督导记录。</li>
+                <li>服务完成不等于归档完成，需单独检查佐证。</li>
+                <li>验收前自动提示未达标频次与缺失材料。</li>
+                <li>本版不做家长端；教师端只作为轻量反馈入口，核心档案仍由项目组审核入库。</li>
+              </ul>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="projectLogic.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
