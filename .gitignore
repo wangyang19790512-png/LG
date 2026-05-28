@@ -1,3 +1,6 @@
 data/
 uploads/
 *.log
+
+.vercel
+vercel-static/
