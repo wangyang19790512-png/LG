@@ -42,6 +42,16 @@ node server.js
 
 部署完成后会得到一个 `https://xxx.onrender.com` 公网地址。免费层可能会休眠，首次访问会慢一些。
 
+### 方案三：Vercel 免费层（静态前端）
+
+仓库已包含 `vercel.json`。在 Vercel 新建项目并导入 GitHub 仓库：
+
+`https://github.com/wangyang19790512-png/LG`
+
+默认无需填写 Build Command，Output Directory 留空即可。部署后会得到一个 `https://xxx.vercel.app` 公网地址。
+
+注意：当前 `server.js` 使用本地 JSON 文件和本地附件目录保存数据，不适合直接在 Vercel Serverless 环境持久化。Vercel 上建议先部署静态前端版；若要启用账号、附件、任务等服务端能力，需要改接 Vercel Postgres / Blob 或其他云数据库与对象存储。
+
 默认账号：
 
 - `admin / admin123`：项目统筹
