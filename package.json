@@ -1,0 +1,14 @@
+{
+  "name": "longgang-student-care-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "龙岗区居家学生关爱项目管理系统本地/云端试用版",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node projectLogic.test.js && node serverCore.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -14,6 +14,34 @@ node server.js
 
 然后访问 `http://localhost:8080`。
 
+## 免费公网部署
+
+### 方案一：GitHub Pages（静态前端）
+
+仓库已包含 `.github/workflows/pages.yml`。在 GitHub 仓库进入：
+
+`Settings` → `Pages` → `Build and deployment` → 选择 `GitHub Actions`
+
+部署完成后访问：
+
+`https://wangyang19790512-png.github.io/LG/`
+
+注意：GitHub Pages 只能运行静态前端，不能运行 `server.js`。
+
+### 方案二：Render 免费层（含 Node 服务端）
+
+仓库已包含 `package.json` 和 `render.yaml`。在 Render 新建 Blueprint 或 Web Service，连接本 GitHub 仓库：
+
+`https://github.com/wangyang19790512-png/LG`
+
+Render 会使用：
+
+```bash
+node server.js
+```
+
+部署完成后会得到一个 `https://xxx.onrender.com` 公网地址。免费层可能会休眠，首次访问会慢一些。
+
 默认账号：
 
 - `admin / admin123`：项目统筹
