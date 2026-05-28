@@ -37,6 +37,10 @@
           <p>中期自查与材料冻结</p>
         </div>
         <div class="side-actions">
+          <input id="loginUsername" class="side-input" type="text" value="admin" aria-label="用户名" />
+          <input id="loginPassword" class="side-input" type="password" value="admin123" aria-label="密码" />
+          <button id="serverLoginBtn" type="button">登录服务端</button>
+          <button id="serverSyncBtn" type="button">同步到服务端</button>
           <button id="exportStateBtn" type="button">导出数据</button>
           <label class="file-action">
             导入数据
@@ -372,6 +376,31 @@
                 <button type="submit">登记服务</button>
               </form>
             </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>派发服务端任务</h3>
+                <span class="muted">需服务端登录</span>
+              </div>
+              <form id="serverTaskForm" class="service-form">
+                <label>
+                  任务标题
+                  <input id="serverTaskTitle" type="text" value="补齐一户一档材料" />
+                </label>
+                <label>
+                  关联家庭
+                  <select id="serverTaskFamily"></select>
+                </label>
+                <label>
+                  指派给
+                  <select id="serverTaskAssignee"></select>
+                </label>
+                <label>
+                  截止日期
+                  <input id="serverTaskDue" type="date" value="2026-06-01" />
+                </label>
+                <button type="submit">创建服务端任务</button>
+              </form>
+            </section>
           </div>
         </section>
 
@@ -554,8 +583,39 @@
             </section>
             <section class="panel">
               <div class="panel-heading">
+                <h3>材料上传</h3>
+                <span class="badge badge-info">一户一档</span>
+              </div>
+              <form id="materialForm" class="service-form">
+                <label>
+                  关联家庭
+                  <select id="materialFamily"></select>
+                </label>
+                <label>
+                  材料类别
+                  <select id="materialCategory">
+                    <option value="知情同意">知情同意</option>
+                    <option value="初访与基线评估">初访与基线评估</option>
+                    <option value="个性化服务方案">个性化服务方案</option>
+                    <option value="服务记录与佐证">服务记录与佐证</option>
+                    <option value="质控审核记录">质控审核记录</option>
+                  </select>
+                </label>
+                <label>
+                  材料标题
+                  <input id="materialTitle" type="text" value="归档材料" />
+                </label>
+                <label>
+                  选择文件
+                  <input id="materialFile" type="file" />
+                </label>
+                <button type="submit">上传到服务端</button>
+              </form>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
                 <h3>控制点</h3>
-                <span class="badge badge-info">MVP</span>
+                <span class="badge badge-info">正式口径</span>
               </div>
               <ul class="control-list">
                 <li>未签署知情同意时禁止开展心理服务。</li>

@@ -146,6 +146,8 @@ let activeSection = "dashboard";
 const undoStack = [];
 const storageKey = "longgang-home-student-project-v1";
 const defaultState = {};
+let serverToken = localStorage.getItem("longgang-server-token") || "";
+let serverUser = null;
 
 const staffMembers = [
   { id: "U-001", name: "李咨询师", role: "咨询师", qualified: true, agreementsSigned: true },
@@ -361,6 +363,25 @@ function recordAudit(action, targetId, detail = "") {
     detail
   });
   if (auditLogs.length > 100) auditLogs.pop();
+}
+
+async function apiRequest(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (serverToken) headers.Authorization = `Bearer ${serverToken}`;
+  if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  const response = await fetch(path, { ...options, headers });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "服务端请求失败");
+  return data;
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function getFilteredFamilies() {
@@ -699,6 +720,26 @@ function renderServiceOptions() {
     .filter((family) => !family.deleted)
     .map((family) => `<option value="${family.id}">${family.id} · ${family.student}</option>`)
     .join("");
+}
+
+function renderStaffOptions(selector) {
+  const element = document.querySelector(selector);
+  if (!element) return;
+  element.innerHTML = staffMembers
+    .filter((person) => person.qualified && person.agreementsSigned)
+    .map((person) => `<option value="${person.id}">${person.name} · ${person.role}</option>`)
+    .join("");
+}
+
+function refreshFormOptions() {
+  renderServiceOptions();
+  renderFamilyOptions("#assessmentFamily");
+  renderFamilyOptions("#crisisFamily");
+  renderFamilyOptions("#qualityFamily");
+  renderFamilyOptions("#noticeFamily");
+  renderFamilyOptions("#materialFamily");
+  renderFamilyOptions("#serverTaskFamily");
+  renderStaffOptions("#serverTaskAssignee");
 }
 
 function renderFamilyOptions(selector) {
@@ -1327,6 +1368,86 @@ document.querySelector("#deletedList").addEventListener("click", (event) => {
 
 document.querySelector("#generateBriefBtn").addEventListener("click", renderAcceptanceBrief);
 
+document.querySelector("#serverLoginBtn").addEventListener("click", async () => {
+  try {
+    const data = await apiRequest("/api/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username: document.querySelector("#loginUsername").value.trim(),
+        password: document.querySelector("#loginPassword").value
+      })
+    });
+    serverToken = data.token;
+    serverUser = data.user;
+    localStorage.setItem("longgang-server-token", serverToken);
+    recordAudit("服务端登录", serverUser.id, serverUser.name);
+    alert(`已登录：${serverUser.name}`);
+    renderAll();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.querySelector("#serverSyncBtn").addEventListener("click", async () => {
+  try {
+    await apiRequest("/api/state", {
+      method: "POST",
+      body: JSON.stringify({ families })
+    });
+    commit("同步服务端", "全项目", "家庭档案已写入服务端 JSON 数据库");
+    alert("已同步到服务端数据库。");
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.querySelector("#materialForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const file = document.querySelector("#materialFile").files[0];
+  if (!file) {
+    alert("请选择需要上传的材料文件。");
+    return;
+  }
+  try {
+    const fileData = await fileToDataUrl(file);
+    const data = await apiRequest("/api/materials", {
+      method: "POST",
+      body: JSON.stringify({
+        familyId: document.querySelector("#materialFamily").value,
+        category: document.querySelector("#materialCategory").value,
+        title: document.querySelector("#materialTitle").value,
+        fileName: file.name,
+        fileData
+      })
+    });
+    commit("上传归档材料", data.material.familyId, data.material.category);
+    event.target.reset();
+    alert("材料已上传到服务端，等待审核。");
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.querySelector("#serverTaskForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    const data = await apiRequest("/api/tasks", {
+      method: "POST",
+      body: JSON.stringify({
+        title: document.querySelector("#serverTaskTitle").value,
+        familyId: document.querySelector("#serverTaskFamily").value,
+        assigneeId: document.querySelector("#serverTaskAssignee").value,
+        dueDate: document.querySelector("#serverTaskDue").value,
+        type: "项目任务"
+      })
+    });
+    commit("创建服务端任务", data.task.familyId, data.task.title);
+    alert(`任务已创建：${data.task.id}`);
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
 document.querySelector("#exportStateBtn").addEventListener("click", () => {
   const blob = new Blob([ProjectLogic.exportProjectState(currentState())], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -1372,9 +1493,5 @@ document.querySelector("#resetDemoBtn").addEventListener("click", () => {
 });
 
 loadState();
-renderServiceOptions();
-renderFamilyOptions("#assessmentFamily");
-renderFamilyOptions("#crisisFamily");
-renderFamilyOptions("#qualityFamily");
-renderFamilyOptions("#noticeFamily");
+refreshFormOptions();
 renderAll();

@@ -6,6 +6,21 @@
 
 直接用浏览器打开 `index.html`。本版本不依赖网络、构建工具或后端服务，数据会自动保存到当前浏览器的 `localStorage`。
 
+也可以启动本地服务端试用账号、权限、附件上传、一户一档材料库、任务派发和 JSON 文件数据库：
+
+```bash
+node server.js
+```
+
+然后访问 `http://localhost:8080`。
+
+默认账号：
+
+- `admin / admin123`：项目统筹
+- `qc / qc123`：督导质控
+- `service / service123`：一线服务人员
+- `edu / edu123`：市教育局监管
+
 ## 当前功能
 
 - 项目指标总览：正式档案、知情同意完成率、个案辅导平均进度、完整归档率。
@@ -32,13 +47,16 @@
 - 人员资质与负荷：咨询师正式负荷按≤6名学生、红码≤2名校验。
 - 备选准入：支持备选名单、排除、准入建档；风险等级为系统建议+人工确认。
 - 验收日期：终期按 2026-09-30 口径处理，中期指标按调整后口径校验。
+- 服务端试用：提供账号权限、附件上传、材料审核接口、服务端任务派发、JSON 文件数据库。
 
 ## 验证方式
 
 ```bash
 node projectLogic.test.js
+node serverCore.test.js
 node --check app.js
 node --check projectLogic.js
+node --check server.js
 ```
 
 ## 后续后端数据模型建议
